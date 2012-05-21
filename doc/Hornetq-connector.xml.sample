@@ -1,0 +1,7 @@
+<!-- BEGIN_INCLUDE(hornetq:send) -->
+<hornetq:send address="bob@bob.com">
+<!-- END_INCLUDE(hornetq:send) -->
+
+<!-- BEGIN_INCLUDE(hornetq:consume) -->
+<hornetq:consume queue="bob@bob.com">
+<!-- END_INCLUDE(hornetq:consume) -->

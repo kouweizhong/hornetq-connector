@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+      xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+      xmlns:hornetq="http://www.mulesoft.org/schema/mule/hornetq"
+
+      xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.2/mule.xsd
+        http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.2/mule-vm.xsd
+        http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/3.2/mule-xml.xsd
+        http://www.mulesoft.org/schema/mule/hornetq http://www.mulesoft.org/schema/mule/hornetq/1.0/mule-hornetq.xsd">
+
+    <hornetq:config clientSession-ref="hornetq.session"/>
+    
+    <spring:bean id="hornetq.embedded" class="org.hornetq.core.server.embedded.EmbeddedHornetQ" init-method="start" destroy-method="stop">
+           <spring:property name="configResourcePath" value="tests-hornetq-configuration.xml"/>     
+    </spring:bean>
+
+    <spring:bean id="hornetq.session" factory-bean="hornetq.clientSessionFactory" factory-method="createSession" init-method="start" destroy-method="stop"/>
+    <spring:bean id="hornetq.clientSessionFactory" factory-bean="hornetq.locator" factory-method="createSessionFactory" destroy-method="close"/>
+    <spring:bean id="hornetq.locator" class="org.hornetq.api.core.client.HornetQClient" factory-method="createServerLocatorWithoutHA" destroy-method="close">
+        <spring:constructor-arg>
+            <spring:bean name="transportConfiguration" class="org.hornetq.api.core.TransportConfiguration" depends-on="hornetq.embedded">
+                <spring:constructor-arg value="org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
+            </spring:bean>
+        </spring:constructor-arg>
+    </spring:bean>
+    
+    <flow name="testSend">
+        <logger level="INFO" message="Got something #[payload:]"/>
+        <hornetq:send address="app.test"/>
+    </flow>
+    
+    <flow name="testConsume">
+        <hornetq:consume address="app.test" queue="otherq"/>
+        <logger level="INFO" message="Got something #[payload:]"/>
+    </flow>
+
+</mule>
