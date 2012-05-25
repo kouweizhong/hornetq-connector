@@ -6,13 +6,15 @@
       xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
       xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
       xmlns:hornetq="http://www.mulesoft.org/schema/mule/hornetq"
+      xmlns:spring-util="http://www.springframework.org/schema/util"
 
       xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.2/mule.xsd
         http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.2/mule-vm.xsd
         http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/3.2/mule-xml.xsd
-        http://www.mulesoft.org/schema/mule/hornetq http://www.mulesoft.org/schema/mule/hornetq/1.0/mule-hornetq.xsd">
+        http://www.mulesoft.org/schema/mule/hornetq http://www.mulesoft.org/schema/mule/hornetq/1.0/mule-hornetq.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
     <hornetq:config clientSession-ref="hornetq.session"/>
     
@@ -36,8 +38,21 @@
     </flow>
     
     <flow name="testConsume">
-        <hornetq:consume address="app.test" queue="otherq"/>
+        <hornetq:consume address="app.test"/>
         <logger level="INFO" message="Got something #[payload:]"/>
     </flow>
+    
+<!--     <flow name="testConsume2"> -->
+<!--         <hornetq:consume address="app.test"/> -->
+<!--         <logger level="INFO" message="Got something #[payload:]"/> -->
+<!--     </flow> -->
+    
+    <spring:beans>
+        <spring-util:list id="queues">
+            <spring:bean id="testq" class="org.mule.modules.hornetq.Queue">
+                <spring:constructor-arg value="app.test"/>
+            </spring:bean>
+        </spring-util:list>
+    </spring:beans>
 
 </mule>
