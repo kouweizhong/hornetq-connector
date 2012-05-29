@@ -17,8 +17,11 @@ public class Queue
     {
         this(address,UUID.randomUUID().toString(),true,"");
     }
-
-
+    
+    public Queue(String address,String queue)
+    {
+        this(address,queue,true,"");
+    }
 
     public Queue(String address, String queue, boolean durable, String filter)
     {

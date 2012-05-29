@@ -116,7 +116,7 @@ public class HornetqModule
             {
                 try
                 {
-                    callback.process(message.getBodyBuffer().readString(),message.toMap());
+                    Object r = callback.process(message.getBodyBuffer().readString(),message.toMap());
                     message.acknowledge();
                 } catch (Exception e)
                 {
