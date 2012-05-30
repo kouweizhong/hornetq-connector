@@ -1,0 +1,1 @@
+http\://www.mulesoft.org/schema/mule/hornetq=org.mule.modules.hornetq.config.HornetqNamespaceHandler

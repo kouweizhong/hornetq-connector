@@ -4,34 +4,55 @@ import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mule.api.MuleEvent;
 import org.mule.api.transport.PropertyScope;
 import org.mule.construct.Flow;
 import org.mule.tck.FunctionalTestCase;
 
-public class HornetqModuleTest extends FunctionalTestCase
+public class HornetQMessageProcessorTestCase extends FunctionalTestCase
 {
+    
+    ClientConsumer c;
+    ClientSession session;
+    
     @Override
     protected String getConfigResources()
     {
         return "mule-config.xml";
     }
+    
+    @Override
+    protected void doSetUp() throws Exception
+    {
+        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
+        session = csf.createSession();
+        if(!(session.queueQuery(SimpleString.toSimpleString("sailthru.send")).isExists()))
+        {
+            session.createQueue("app.test", "sailthru.send");
+        }
+        c = session.createConsumer("sailthru.send");
+        
+        session.start();
+    }
+    
+    @Override
+    protected void doTearDown() throws Exception
+    {
+        session.stop();
+    }
 
     @Test
     public void testSend() throws Exception
     {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
-        ClientSession s1 = csf.createSession();
-        s1.createQueue("app.test", "sailthru.send");
-        ClientConsumer c = s1.createConsumer("sailthru.send");
-        s1.start();
         Flow flow = muleContext.getRegistry().get("testSend");
         MuleEvent event = getTestEvent("hello");
         flow.process(event);
@@ -44,12 +65,6 @@ public class HornetqModuleTest extends FunctionalTestCase
     @Test
     public void testSendWithProperties() throws Exception
     {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
-        ClientSession s1 = csf.createSession();
-        s1.createQueue("app.test", "sailthru.send");
-        ClientConsumer c = s1.createConsumer("sailthru.send");
-        s1.start();
         Flow flow = muleContext.getRegistry().get("testSend");
         MuleEvent event = getTestEvent("hello");
         event.getMessage().setOutboundProperty("TEST", "hello");
@@ -64,12 +79,6 @@ public class HornetqModuleTest extends FunctionalTestCase
     @Test
     public void testSendWithCorrelationId() throws Exception
     {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
-        ClientSession s1 = csf.createSession();
-        s1.createQueue("app.test", "sailthru.send");
-        ClientConsumer c = s1.createConsumer("sailthru.send");
-        s1.start();
         Flow flow = muleContext.getRegistry().get("testSend");
         MuleEvent event = getTestEvent("hello");
         event.getMessage().setCorrelationId("BOB");
@@ -84,12 +93,6 @@ public class HornetqModuleTest extends FunctionalTestCase
     @Test
     public void testSendWithExpressionAddress() throws Exception
     {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
-        ClientSession s1 = csf.createSession();
-        s1.createQueue("app.test", "sailthru.send");
-        ClientConsumer c = s1.createConsumer("sailthru.send");
-        s1.start();
         Flow flow = muleContext.getRegistry().get("testSendWithAddressExpression");
         MuleEvent event = getTestEvent("hello");
         event.getMessage().addProperties(Collections.singletonMap("address",(Object) "app.test"), PropertyScope.INBOUND);
@@ -103,12 +106,6 @@ public class HornetqModuleTest extends FunctionalTestCase
     @Test
     public void testSendWithExpressionHeaders() throws Exception
     {
-        final CountDownLatch latch = new CountDownLatch(1);
-        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
-        ClientSession s1 = csf.createSession();
-        s1.createQueue("app.test", "sailthru.send");
-        ClientConsumer c = s1.createConsumer("sailthru.send");
-        s1.start();
         Flow flow = muleContext.getRegistry().get("testSendWithHeaderExpression");
         MuleEvent event = getTestEvent("hello");
         event.getMessage().addProperties(Collections.singletonMap("address",(Object) "app.test"), PropertyScope.INBOUND);
@@ -117,18 +114,5 @@ public class HornetqModuleTest extends FunctionalTestCase
         msg.acknowledge();
         assertEquals("hello",msg.getBodyBuffer().readString());
         assertEquals(0L,msg.getObjectProperty("TEST"));
-    }
-    
-    @Test
-    public void testConsume() throws Exception
-    {
-        ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
-        ClientSession session = csf.createSession();
-
-        ClientMessage msg = session.createMessage(true);
-        msg.getBodyBuffer().writeString("hello, world");
-        Thread.sleep(5*1000);
-        session.createProducer().send("app.test", msg);
-        Thread.sleep(20*1000);
     }
 }

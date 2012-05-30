@@ -81,13 +81,13 @@ public class HornetQMessageProcessor implements MessageProcessor, MuleContextAwa
         this.expressionManager = context.getExpressionManager();
     }
     
-    public void setAddressExpression(String addressExpression)
+    public void setAddress(String addressExpression)
     {
         if(null == addressExpression) throw new IllegalArgumentException("addressExpression can't be null");
         this.addressExpression = addressExpression;
     }
     
-    public void setHeaderExpressions(Map<String,String> expressions)
+    public void setHeaders(Map<String,String> expressions)
     {
         if(null == expressions) throw new IllegalArgumentException("expressions can't be null");
         this.headerExpressions = expressions;

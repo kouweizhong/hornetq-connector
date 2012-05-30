@@ -35,39 +35,40 @@
         </spring:constructor-arg>
     </spring:bean>
     
+    <spring:bean id="countDownLatch1" class="java.util.concurrent.CountDownLatch">
+        <spring:constructor-arg value="1"/>
+    </spring:bean>
+    
     <flow name="testSend">
         <logger level="INFO" message="Got something #[payload:]"/>
-        <custom-processor class="org.mule.modules.hornetq.HornetQMessageProcessor">
-            <spring:property name="clientSession" ref="hornetq.session"/>
-            <spring:property name="addressExpression" value="app.test"/>
-        </custom-processor>
+        <hornetq:send clientSession-ref="hornetq.session" address="app.test"/>
     </flow>
     
     <flow name="testSendWithAddressExpression">
         <logger level="INFO" message="Got something #[payload:]"/>
-        <custom-processor class="org.mule.modules.hornetq.HornetQMessageProcessor">
-            <spring:property name="clientSession" ref="hornetq.session"/>
-            <spring:property name="addressExpression" value="#[header:INBOUND:address]"/>
-        </custom-processor>
+        <hornetq:send clientSession-ref="hornetq.session" address="#[header:INBOUND:address]"/>
     </flow>
     
     <flow name="testSendWithHeaderExpression">
         <logger level="INFO" message="Got something #[payload:]"/>
-        <custom-processor class="org.mule.modules.hornetq.HornetQMessageProcessor">
-            <spring:property name="clientSession" ref="hornetq.session"/>
-            <spring:property name="addressExpression" value="app.test"/>
-            <spring:property name="headerExpressions">
+        <hornetq:send clientSession-ref="hornetq.session" address="app.test">
+            <spring:property name="headers">
                 <spring:map>
                     <spring:entry key="TEST" value="#[function:count]"></spring:entry>
                 </spring:map>
             </spring:property>
-        </custom-processor>
+        </hornetq:send>
     </flow>
     
-<!--     <flow name="testConsume"> -->
-<!--         <hornetq:consume address="app.test"/> -->
-<!--         <logger level="INFO" message="Got something #[payload:]"/> -->
-<!--     </flow> -->
+    <flow name="testConsume">
+        <custom-source class="org.mule.modules.hornetq.HornetQConsumerSource">
+            <spring:property name="clientSession" ref="hornetq.session"/>
+            <spring:property name="queue" ref="testq"/>
+        </custom-source>
+        <logger level="INFO"/>
+        <logger level="INFO" message="Got something #[payload:]"/>
+        <invoke object-ref="countDownLatch1" method="countDown"></invoke>
+    </flow>
     
 <!--     <flow name="testConsume2"> -->
 <!--         <hornetq:consume address="app.test"/> -->
@@ -75,12 +76,10 @@
 <!--     </flow> -->
     
     <spring:beans>
-        <spring-util:list id="queues">
-            <spring:bean id="testq" class="org.mule.modules.hornetq.Queue">
-                <spring:constructor-arg value="app.test"/>
-                <spring:constructor-arg value="sailthru.send"/>
-            </spring:bean>
-        </spring-util:list>
+        <spring:bean id="testq" class="org.mule.modules.hornetq.Queue">
+            <spring:constructor-arg value="app.test2" />
+            <spring:constructor-arg value="sailthru.send2" />
+        </spring:bean>
     </spring:beans>
 
 </mule>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.mulesoft.org/schema/mule/hornetq"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+            xmlns:spring="http://www.springframework.org/schema/beans"
+            xmlns:schemadoc="http://www.mulesoft.org/schema/mule/schemadoc"
+            targetNamespace="http://www.mulesoft.org/schema/mule/hornetq"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:import namespace="http://www.mulesoft.org/schema/mule/core"
+                schemaLocation="http://www.mulesoft.org/schema/mule/core/3.2/mule.xsd" />
+    <xsd:import namespace = "http://www.mulesoft.org/schema/mule/schemadoc"
+                schemaLocation = "http://www.mulesoft.org/schema/mule/schemadoc/3.2/mule-schemadoc.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/beans"
+                schemaLocation="http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"/>
+
+    <xsd:annotation>
+        <xsd:documentation>Provides hornetq-core api integration</xsd:documentation>
+        <xsd:appinfo>
+            <schemadoc:short-name>Hornetq</schemadoc:short-name>
+            <schemadoc:page-title>Hornetq Mule Module</schemadoc:page-title>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+	<xsd:element name="send" substitutionGroup="mule:abstract-message-processor">
+		<xsd:annotation>
+			<xsd:documentation>
+				Send a message via Hornetq
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="mule:abstractMessageProcessorType">
+                    <xsd:sequence>
+                        <xsd:element ref="spring:property" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+					<xsd:attribute name="clientSession-ref" type="xsd:IDREF" use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								The clientsession to use
+                            </xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+                    <xsd:attribute name="address" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The address to send the message to
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+ 	
+</xsd:schema>
