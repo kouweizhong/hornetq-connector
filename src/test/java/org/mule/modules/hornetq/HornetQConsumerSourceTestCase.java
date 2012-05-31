@@ -1,6 +1,7 @@
 package org.mule.modules.hornetq;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
@@ -44,12 +45,13 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
     {
 
         CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
-        
+        AtomicInteger ai = muleContext.getRegistry().get("atomicInt1");
         ClientMessage msg = session.createMessage(true);
         msg.getBodyBuffer().writeString("hello, world");
-        producer.send("app.test", msg);
-        
+        producer.send("app.test2", msg);
         l.await();
+        
+        assertEquals(1,ai.get());
     }
     
     @Test
@@ -61,7 +63,7 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
         ClientMessage msg = session.createMessage(true);
         msg.putObjectProperty("TEST", "hello");
         msg.getBodyBuffer().writeString("hello, world");
-        producer.send("app.test", msg);
+        producer.send("app.test2", msg);
         
         l.await();
     }

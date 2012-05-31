@@ -39,6 +39,10 @@
         <spring:constructor-arg value="1"/>
     </spring:bean>
     
+    <spring:bean id="atomicInt1" class="java.util.concurrent.atomic.AtomicInteger">
+        <spring:constructor-arg value="0"/>
+    </spring:bean>
+    
     <flow name="testSend">
         <logger level="INFO" message="Got something #[payload:]"/>
         <hornetq:send clientSession-ref="hornetq.session" address="app.test"/>
@@ -61,13 +65,11 @@
     </flow>
     
     <flow name="testConsume">
-        <custom-source class="org.mule.modules.hornetq.HornetQConsumerSource">
-            <spring:property name="clientSession" ref="hornetq.session"/>
-            <spring:property name="queue" ref="testq"/>
-        </custom-source>
+        <hornetq:consume clientSession-ref="hornetq.session" queue-ref="testq" />
         <logger level="INFO"/>
         <logger level="INFO" message="Got something #[payload:]"/>
-        <invoke object-ref="countDownLatch1" method="countDown"></invoke>
+        <invoke object-ref="atomicInt1" method="getAndIncrement"/>
+        <invoke object-ref="countDownLatch1" method="countDown"/>
     </flow>
     
 <!--     <flow name="testConsume2"> -->

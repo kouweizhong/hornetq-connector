@@ -12,6 +12,6 @@ public class HornetqNamespaceHandler extends AbstractMuleNamespaceHandler
     public void init()
     {
         registerMuleBeanDefinitionParser("send", new MessageProcessorDefinitionParser(HornetQMessageProcessor.class));
-        registerMuleBeanDefinitionParser("consume", new ChildDefinitionParser("messageSource", null, HornetQConsumerSource.class));
+        registerMuleBeanDefinitionParser("consume", new ChildDefinitionParser("messageSource", HornetQConsumerSource.class));
     }
 }
