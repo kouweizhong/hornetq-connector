@@ -39,6 +39,10 @@
         <spring:constructor-arg value="1"/>
     </spring:bean>
     
+    <spring:bean id="countDownLatch2" class="java.util.concurrent.CountDownLatch">
+        <spring:constructor-arg value="1"/>
+    </spring:bean>
+    
     <spring:bean id="atomicInt1" class="java.util.concurrent.atomic.AtomicInteger">
         <spring:constructor-arg value="0"/>
     </spring:bean>
@@ -72,16 +76,22 @@
         <invoke object-ref="countDownLatch1" method="countDown"/>
     </flow>
     
-<!--     <flow name="testConsume2"> -->
-<!--         <hornetq:consume address="app.test"/> -->
-<!--         <logger level="INFO" message="Got something #[payload:]"/> -->
-<!--     </flow> -->
+    <flow name="testConsume2">
+        <hornetq:consume clientSession-ref="hornetq.session" queue-ref="testq2" filter="EVENT_TYPE='TEST'"/>
+        <logger level="INFO" message="Got something #[payload:]"/>
+        <invoke object-ref="countDownLatch2" method="countDown"/>
+    </flow>
+    
+    <flow name="testConsumeCount">
+        <hornetq:consume clientSession-ref="hornetq.session" queue-ref="testq3" consumerCount="5"/>
+        <logger level="INFO" message="Got something #[payload:]"/>
+        <invoke object-ref="countDownLatch2" method="countDown"/>
+    </flow>
     
     <spring:beans>
-        <spring:bean id="testq" class="org.mule.modules.hornetq.Queue">
-            <spring:constructor-arg value="app.test2" />
-            <spring:constructor-arg value="sailthru.send2" />
-        </spring:bean>
+        <hornetq:queue id="testq" address="app.test2" queue="sailthru.send2" />
+        <hornetq:queue id="testq2" address="app.test2" queue="sailthru.send3" />
+        <hornetq:queue id="testq3" address="app.test3" queue="q1" />
     </spring:beans>
 
 </mule>

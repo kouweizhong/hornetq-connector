@@ -28,6 +28,7 @@ import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
 import org.mule.api.callback.SourceCallback;
 import org.mule.api.context.MuleContextAware;
+import org.mule.modules.hornetq.impl.QueueInternalImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +89,7 @@ public class HornetqModule
     public void consume(String address, @Optional() String queue, @Optional @Default(value="true") boolean durable, @Optional @Default(value="false") boolean temporary, @Optional String queueFilter, @Optional @Default(value="1") Integer consumerCount, @Optional @Default(value="") String filter, final SourceCallback callback) throws HornetQException
     //public void consume(String queue, @Optional @Default(value="1") Integer consumerCount, @Optional @Default(value="") String filter, final SourceCallback callback) throws HornetQException
     {
-        Queue q = new Queue(address,queue,durable,queueFilter);
+        Queue q = new QueueInternalImpl(address,queue,durable,queueFilter);
         QueueQuery qq = clientSession.queueQuery(SimpleString.toSimpleString(q.getQueue()));
         if (!qq.isExists())
         {

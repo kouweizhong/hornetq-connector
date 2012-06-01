@@ -53,7 +53,7 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
             }
             for(int i=0;i<consumerCount;i++)
             {
-                ClientConsumer consumer = createConsumer(queue.getQueue());
+                ClientConsumer consumer = createConsumer(queue.getQueue(), this.filter);
             }
         } catch (HornetQException e)
         {
@@ -61,9 +61,9 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
         }
     }
     
-    protected ClientConsumer createConsumer(String queue) throws HornetQException
+    protected ClientConsumer createConsumer(String queue, String filter) throws HornetQException
     {
-        ClientConsumer consumer = clientSession.createConsumer(queue);
+        ClientConsumer consumer = clientSession.createConsumer(queue, filter);
         consumer.setMessageHandler(new MessageHandler()
         {
 
@@ -80,6 +80,7 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
                     muleSession = new DefaultMuleSession(flowConstruct, muleContext);
                     MuleEvent muleEvent;
                     muleEvent = new DefaultMuleEvent(muleMessage, MessageExchangePattern.ONE_WAY, muleSession);
+                    logger.debug("Created muleEvent {}",muleEvent);
                     MuleEvent responseEvent;
                     responseEvent = listener.process(muleEvent);
                     clientSession.commit();

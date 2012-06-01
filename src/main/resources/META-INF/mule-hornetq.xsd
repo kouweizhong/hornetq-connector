@@ -87,7 +87,50 @@
                             </xsd:documentation>
                         </xsd:annotation>
                     </xsd:attribute>
-                    <xsd:attribute name="consumers" type="xsd:positiveInteger" use="optional">
+                    <xsd:attribute name="consumerCount" type="mule:substitutableInt" use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The number of consumers
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="filter" type="xsd:string" use="optional">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Filter for the consumers
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="queue">
+        <xsd:annotation>
+            <xsd:documentation>
+                Send a message via Hornetq
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="spring:identifiedType">
+                    <xsd:attribute name="address"
+                        type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The address to bind the queue to
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="queue" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The queue name
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="durable" type="mule:substitutableBoolean" use="optional">
                         <xsd:annotation>
                             <xsd:documentation>
                                 The number of consumers

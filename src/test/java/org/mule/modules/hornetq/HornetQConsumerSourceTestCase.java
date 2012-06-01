@@ -59,6 +59,7 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
     {
 
         CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
+        CountDownLatch l2 = muleContext.getRegistry().get("countDownLatch2");
         
         ClientMessage msg = session.createMessage(true);
         msg.putObjectProperty("TEST", "hello");
@@ -66,5 +67,33 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
         producer.send("app.test2", msg);
         
         l.await();
+        
+        assertEquals(1,l2.getCount());
+    }
+    
+    @Test
+    public void testConsumeWithFilter() throws Exception
+    {
+
+        CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
+        CountDownLatch l2 = muleContext.getRegistry().get("countDownLatch2");
+        AtomicInteger ai = muleContext.getRegistry().get("atomicInt1");
+        ClientMessage msg = session.createMessage(true);
+        msg.putObjectProperty("TEST", "hello");
+        msg.putObjectProperty("EVENT_TYPE", "TEST");
+        msg.getBodyBuffer().writeString("hello, world");
+        producer.send("app.test2", msg);
+        
+        l.await();
+        l2.await();
+    }
+    
+    @Test
+    public void testConsumeCount() throws Exception
+    {
+
+        Queue q = muleContext.getRegistry().get("testq3");
+        int count = session.queueQuery(SimpleString.toSimpleString(q.getQueue())).getConsumerCount();
+        assertEquals(5,count);
     }
 }
