@@ -38,7 +38,7 @@
                             minOccurs="0" maxOccurs="unbounded" />
                     </xsd:sequence>
                     <xsd:attribute name="clientSession-ref"
-                        type="xsd:IDREF" use="required">
+                        type="xsd:string" use="required">
                         <xsd:annotation>
                             <xsd:documentation>
                                 The clientsession to use
@@ -73,7 +73,7 @@
                             minOccurs="0" maxOccurs="unbounded" />
                     </xsd:sequence>
                     <xsd:attribute name="clientSession-ref"
-                        type="xsd:IDREF" use="required">
+                        type="xsd:string" use="required">
                         <xsd:annotation>
                             <xsd:documentation>
                                 The clientsession to use

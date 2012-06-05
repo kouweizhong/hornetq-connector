@@ -1,5 +1,10 @@
 package org.mule.modules.hornetq;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -27,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class HornetQConsumerSource implements MessageSource, FlowConstructAware, MuleContextAware, Startable,Stoppable
+public class HornetQConsumerSource implements MessageSource, FlowConstructAware, MuleContextAware, Startable, Stoppable
 {
     private transient Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -75,7 +80,8 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
                     logger.debug("Got a message");
                     message.acknowledge();
                     MuleMessage muleMessage;
-                    muleMessage = new DefaultMuleMessage(message.getBodyBuffer().readString(),message.toMap(), null, null, muleContext);
+                    Map<String,Object> props = cleanMapOfSimpleString(message.toMap());
+                    muleMessage = new DefaultMuleMessage(message.getBodyBuffer().readString(),props, null, null, muleContext);
                     MuleSession muleSession;
                     muleSession = new DefaultMuleSession(flowConstruct, muleContext);
                     MuleEvent muleEvent;
@@ -88,7 +94,10 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
                 {
                     try
                     {
+                        logger.info("Rolling back");
+                        logger.error("SOmehing bad",e);
                         clientSession.rollback();
+                        throw new RuntimeException(e);
                     } catch (HornetQException e1)
                     {
                         logger.error("Something bad happened while rollback {}",e1);
@@ -98,6 +107,56 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
         });
         
         return consumer;
+    }
+    
+    protected Map<String,Object> cleanMapOfSimpleString(Map<String,Object> m)
+    {
+        Map<String,Object> cleanMap = new LinkedHashMap<String,Object>(m.size());
+        for(Map.Entry<String, Object> e: m.entrySet())
+        {
+            if(e.getValue() instanceof SimpleString)
+            {
+                cleanMap.put(e.getKey(), e.getValue().toString());
+            } else if(e.getValue() instanceof Map)
+            {
+                cleanMap.put(e.getKey(), cleanMapOfSimpleString((Map)e.getValue()));
+            } else if(e.getValue() instanceof Collection)
+            {
+                cleanMap.put(e.getKey(), cleanCollectionOfSimpleString((Collection)e.getValue()));
+            } else
+            {
+                cleanMap.put(e.getKey(), e.getValue());
+            }
+        }
+        
+        return cleanMap;
+    }
+    
+    protected Collection cleanCollectionOfSimpleString(Collection dirty)
+    {
+        Collection clean;
+        try
+        {
+            clean = dirty.getClass().newInstance();
+        } catch (InstantiationException e)
+        {
+            clean = new LinkedList();
+        } catch (IllegalAccessException e)
+        {
+            clean = new LinkedList();
+        }
+        for(Object o: dirty)
+        {
+            if(o instanceof SimpleString)
+            {
+                clean.add(o.toString());
+            } else
+            {
+                clean.add(o);
+            }
+        }
+        
+        return clean;
     }
     
     @Override

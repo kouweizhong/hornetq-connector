@@ -72,6 +72,7 @@
         <hornetq:consume clientSession-ref="hornetq.session" queue-ref="testq" />
         <logger level="INFO"/>
         <logger level="INFO" message="Got something #[payload:]"/>
+        <logger level="INFO" message="#[groovy: message.getInboundProperty('TEST') as java.lang.String]"/>
         <invoke object-ref="atomicInt1" method="getAndIncrement"/>
         <invoke object-ref="countDownLatch1" method="countDown"/>
     </flow>
@@ -87,11 +88,12 @@
         <logger level="INFO" message="Got something #[payload:]"/>
         <invoke object-ref="countDownLatch2" method="countDown"/>
     </flow>
+        
     
     <spring:beans>
         <hornetq:queue id="testq" address="app.test2" queue="sailthru.send2" />
         <hornetq:queue id="testq2" address="app.test2" queue="sailthru.send3" />
-        <hornetq:queue id="testq3" address="app.test3" queue="q1" />
+        <hornetq:queue id="testq3" address="app.test3" queue="sailthru.send4" />
     </spring:beans>
 
 </mule>
