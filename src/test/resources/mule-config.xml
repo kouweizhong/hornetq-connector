@@ -91,9 +91,9 @@
         
     
     <spring:beans>
-        <hornetq:queue id="testq" address="app.test2" queue="sailthru.send2" />
-        <hornetq:queue id="testq2" address="app.test2" queue="sailthru.send3" />
-        <hornetq:queue id="testq3" address="app.test3" queue="sailthru.send4" />
+        <hornetq:queue id="testq" address="app.test2" name="sailthru.send2" />
+        <hornetq:queue id="testq2" address="app.test2" name="sailthru.send3" />
+        <hornetq:queue id="testq3" address="app.test3" name="sailthru.send4" />
     </spring:beans>
 
 </mule>

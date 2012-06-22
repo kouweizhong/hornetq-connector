@@ -50,15 +50,15 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
     {
         try
         {
-            QueueQuery qq = clientSession.queueQuery(SimpleString.toSimpleString(queue.getQueue()));
+            QueueQuery qq = clientSession.queueQuery(SimpleString.toSimpleString(queue.getName()));
             if (!qq.isExists())
             {
                 logger.info("Creating {}",queue);
-                clientSession.createQueue(queue.getAddress(), queue.getQueue(), queue.getFilter(),queue.isDurable());
+                clientSession.createQueue(queue.getAddress(), queue.getName(), queue.getFilter(),queue.isDurable());
             }
             for(int i=0;i<consumerCount;i++)
             {
-                ClientConsumer consumer = createConsumer(queue.getQueue(), this.filter);
+                ClientConsumer consumer = createConsumer(queue.getName(), this.filter);
             }
         } catch (HornetQException e)
         {

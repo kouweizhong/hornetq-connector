@@ -29,9 +29,9 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
         ClientSessionFactory csf = muleContext.getRegistry().get("hornetq.clientSessionFactory");
         Queue q = muleContext.getRegistry().get("testq");
         session = csf.createSession();
-        if(!(session.queueQuery(SimpleString.toSimpleString(q.getQueue())).isExists()))
+        if(!(session.queueQuery(SimpleString.toSimpleString(q.getName())).isExists()))
         {
-            session.createQueue(q.getAddress(), q.getQueue());
+            session.createQueue(q.getAddress(), q.getName());
         }
         producer = session.createProducer();
         
@@ -93,7 +93,7 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
     {
 
         Queue q = muleContext.getRegistry().get("testq3");
-        int count = session.queueQuery(SimpleString.toSimpleString(q.getQueue())).getConsumerCount();
+        int count = session.queueQuery(SimpleString.toSimpleString(q.getName())).getConsumerCount();
         assertEquals(5,count);
     }
 }

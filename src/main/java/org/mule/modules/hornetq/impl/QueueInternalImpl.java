@@ -9,8 +9,8 @@ import org.mule.modules.hornetq.Queue;
 public class QueueInternalImpl implements Queue
 {
     private String address;
-    private String queue;
-    private boolean durable;
+    private String name = UUID.randomUUID().toString();
+    private boolean durable = true;
     private String filter;
     
     private boolean constructed = false;
@@ -33,7 +33,7 @@ public class QueueInternalImpl implements Queue
     {
         super();
         this.address = address;
-        this.queue = null == queue?UUID.randomUUID().toString():queue;
+        this.name = null == queue?UUID.randomUUID().toString():queue;
         this.durable = durable;
         this.filter = filter;
     }
@@ -56,14 +56,14 @@ public class QueueInternalImpl implements Queue
      * @see org.mule.modules.hornetq.impl.Queue#getQueue()
      */
     @Override
-    public String getQueue()
+    public String getName()
     {
-        return queue;
+        return name;
     }
 
-    public void setQueue(String queue)
+    public void setName(String queue)
     {
-        this.queue = queue;
+        this.name = queue;
     }
     
     /* (non-Javadoc)
@@ -105,7 +105,7 @@ public class QueueInternalImpl implements Queue
     {
         return String.format(
                 "Queue [address=%s, queue=%s, durable=%s, filter=%s]", address,
-                queue, durable, filter);
+                name, durable, filter);
     }
     
     

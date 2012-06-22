@@ -5,7 +5,7 @@ public interface Queue
 
     public String getAddress();
 
-    public String getQueue();
+    public String getName();
 
     public boolean isDurable();
 
