@@ -1,11 +1,17 @@
 package org.mule.modules.hornetq;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -81,7 +87,7 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
                     message.acknowledge();
                     MuleMessage muleMessage;
                     Map<String,Object> props = cleanMapOfSimpleString(message.toMap());
-                    muleMessage = new DefaultMuleMessage(message.getBodyBuffer().readString(),props, null, null, muleContext);
+                    muleMessage = new DefaultMuleMessage(readMessageBody(message),props, null, null, muleContext);
                     MuleSession muleSession;
                     muleSession = new DefaultMuleSession(flowConstruct, muleContext);
                     MuleEvent muleEvent;
@@ -107,6 +113,33 @@ public class HornetQConsumerSource implements MessageSource, FlowConstructAware,
         });
         
         return consumer;
+    }
+    
+    protected Object readMessageBody(ClientMessage message) throws IOException, ClassNotFoundException
+    {
+        switch(message.getType())
+        {
+            case Message.TEXT_TYPE:
+                return message.getBodyBuffer().readString();
+            case Message.OBJECT_TYPE:
+                ByteArrayInputStream bais = new ByteArrayInputStream(readBytes(message.getBodyBuffer(), message.getBodyBuffer().readInt()));
+                ObjectInputStream ois = new org.hornetq.utils.ObjectInputStreamWithClassLoader(bais);
+                ois.close();
+                return (Serializable)ois.readObject();
+            case Message.BYTES_TYPE:
+                return readBytes(message.getBodyBuffer(), message.getBodySize());
+            default:
+                throw new IllegalArgumentException("Unsupported type "+message.getType());
+        }
+        
+    }
+    
+    protected byte[] readBytes(HornetQBuffer buffer, int size)
+    {
+        byte[] data = new byte[size];
+        buffer.readBytes(data);
+        
+        return data;
     }
     
     protected Map<String,Object> cleanMapOfSimpleString(Map<String,Object> m)

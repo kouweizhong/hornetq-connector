@@ -1,8 +1,11 @@
 package org.mule.modules.hornetq;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -46,7 +49,27 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
 
         CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
         AtomicInteger ai = muleContext.getRegistry().get("atomicInt1");
-        ClientMessage msg = session.createMessage(true);
+        ClientMessage msg = session.createMessage(Message.TEXT_TYPE, true);
+        msg.getBodyBuffer().writeString("hello, world");
+        producer.send("app.test2", msg);
+        l.await();
+        
+        assertEquals(1,ai.get());
+    }
+    
+    @Test
+    public void testConsumeMap() throws Exception
+    {
+
+        CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
+        AtomicInteger ai = muleContext.getRegistry().get("atomicInt1");
+        ClientMessage msg = session.createMessage(Message.TEXT_TYPE, true);
+        
+        Map<String,Object> data = new HashMap<String, Object>();
+        data.put("a", 1);
+        data.put("b",2);
+        data.put("c",3);
+        
         msg.getBodyBuffer().writeString("hello, world");
         producer.send("app.test2", msg);
         l.await();
@@ -61,7 +84,7 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
         CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
         CountDownLatch l2 = muleContext.getRegistry().get("countDownLatch2");
         
-        ClientMessage msg = session.createMessage(true);
+        ClientMessage msg = session.createMessage(Message.TEXT_TYPE, true);
         msg.putObjectProperty("TEST", "hello");
         msg.getBodyBuffer().writeString("hello, world");
         producer.send("app.test2", msg);
@@ -78,7 +101,7 @@ public class HornetQConsumerSourceTestCase extends FunctionalTestCase
         CountDownLatch l = muleContext.getRegistry().get("countDownLatch1");
         CountDownLatch l2 = muleContext.getRegistry().get("countDownLatch2");
         AtomicInteger ai = muleContext.getRegistry().get("atomicInt1");
-        ClientMessage msg = session.createMessage(true);
+        ClientMessage msg = session.createMessage(Message.TEXT_TYPE, true);
         msg.putObjectProperty("TEST", "hello");
         msg.putObjectProperty("EVENT_TYPE", "TEST");
         msg.getBodyBuffer().writeString("hello, world");
