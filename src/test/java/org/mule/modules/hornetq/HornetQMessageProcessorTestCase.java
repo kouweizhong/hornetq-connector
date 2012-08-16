@@ -1,9 +1,15 @@
 package org.mule.modules.hornetq;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -11,6 +17,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mule.api.MuleEvent;
@@ -59,6 +66,56 @@ public class HornetQMessageProcessorTestCase extends FunctionalTestCase
         ClientMessage msg = c.receive();
         msg.acknowledge();
         assertEquals("hello",msg.getBodyBuffer().readString());
+    }
+
+    @Test
+    public void testSendByteArray() throws Exception
+    {
+        Flow flow = muleContext.getRegistry().get("testSend");
+        MuleEvent event = getTestEvent("hello".getBytes());
+        flow.process(event);
+        ClientMessage msg = c.receive();
+        msg.acknowledge();
+        assertEquals(Message.BYTES_TYPE,msg.getType());
+        assertEquals("hello".getBytes().length,msg.getBodyBuffer().readableBytes());
+        byte[] body = new byte[msg.getBodySize()];
+        msg.getBodyBuffer().readBytes(body);
+        Assert.assertArrayEquals("hello".getBytes(), body);
+    }
+
+    @Test
+    public void testSendInputstream() throws Exception
+    {
+        Flow flow = muleContext.getRegistry().get("testSend");
+        MuleEvent event = getTestEvent(new ByteArrayInputStream("hello".getBytes()));
+        flow.process(event);
+        ClientMessage msg = c.receive();
+        msg.acknowledge();
+        assertEquals(Message.BYTES_TYPE,msg.getType());
+        assertEquals("hello".getBytes().length,msg.getBodyBuffer().readableBytes());
+        byte[] body = new byte[msg.getBodySize()];
+        msg.getBodyBuffer().readBytes(body);
+        Assert.assertArrayEquals("hello".getBytes(), body);
+    }
+
+    @Test
+    public void testSendObject() throws Exception
+    {
+        Flow flow = muleContext.getRegistry().get("testSend");
+        MuleEvent event = getTestEvent(new Integer(5));
+        flow.process(event);
+        ClientMessage msg = c.receive();
+        msg.acknowledge();
+        assertEquals(Message.OBJECT_TYPE,msg.getType());
+        msg.getBodyBuffer().resetReaderIndex();
+        int len = msg.getBodyBuffer().readInt();
+        byte[] data = new byte[len];
+        msg.getBodyBuffer().readBytes(data);
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        ObjectInputStream ois = new org.hornetq.utils.ObjectInputStreamWithClassLoader(bais);
+        Serializable object = (Serializable)ois.readObject();
+        ois.close();
+        Assert.assertEquals(object, new Integer(5));
     }
 
 
